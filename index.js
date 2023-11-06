@@ -41,6 +41,33 @@ async function run() {
             res.send(resuilt)
         })
 
+        app.patch('/create/:id',async(req,res)=>{
+            const id =req.params.id
+            const filter ={_id : new ObjectId(id)}
+            const assinments =req.body
+            const Updateassinments ={
+                $set :{
+                    title:assinments.title,
+                     marks:assinments.marks,
+                     image:assinments.image,
+                     datepiker:assinments.datepiker,
+                     difficult:assinments.difficult,
+                     description:assinments.description
+                }
+            }
+
+            const resuilt =await courseCollection.updateOne(filter,Updateassinments)
+            res.send(resuilt)
+
+        })
+
+        app.get('/create/:id',async(req,res)=>{
+            const id =req.params.id
+            const query ={_id : new ObjectId(id)}
+            const resuilt =await courseCollection.findOne(query)
+            res.send(resuilt)
+        })
+
         app.get('/create',async(req,res)=>{
             const result =await courseCollection.find().toArray()
             res.send(result)
