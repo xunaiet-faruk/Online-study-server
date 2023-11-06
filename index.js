@@ -33,7 +33,20 @@ async function run() {
         // Connect the client to the server	(optional starting in v4.7)
         await client.connect();
         const courseCollection = client.db("courseDB").collection("course");
+        const cardCollection = client.db("courseDB").collection("cards");
+        const assinmentsColection = client.db("courseDB").collection("forms")
 
+        app.post('/fromassinmetns',async(req,res)=>{
+            const body =req.body;
+            const result =await assinmentsColection.insertOne(body)
+            res.send(result)
+
+        })
+
+        app.get('/fromassinmetns',async(req,res)=>{
+            const result =await assinmentsColection.find().toArray()
+            res.send(result)
+        })
 
         app.post('/create',async(req,res)=>{
             const query =req.body
@@ -61,6 +74,16 @@ async function run() {
 
         })
 
+
+
+        app.post('/submitted', async (req, res) => {
+            const card = req.body;
+            const result = await cardCollection.insertOne(card)
+            res.send(result)
+        })
+
+      
+
         app.get('/create/:id',async(req,res)=>{
             const id =req.params.id
             const query ={_id : new ObjectId(id)}
@@ -69,8 +92,18 @@ async function run() {
         })
 
         app.get('/create',async(req,res)=>{
-            const result =await courseCollection.find().toArray()
-            res.send(result)
+            const query =req.query;
+            const page =query.page
+
+            const pagenumber =parseInt(page)
+            const perpage =6;
+
+            const skip =pagenumber * perpage
+            const result =await courseCollection.find().skip(skip).limit(perpage).toArray()
+            const postCount =await courseCollection.countDocuments()
+            console.log(postCount)
+            res.send({result,postCount})
+            
         })
 
         app.get('/create/:id',async(req,res)=>{
