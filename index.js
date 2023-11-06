@@ -44,7 +44,14 @@ async function run() {
         })
 
         app.get('/fromassinmetns',async(req,res)=>{
-            const result =await assinmentsColection.find().toArray()
+          
+            console.log(req.query?.useremail)
+            let query ={};
+            if (req.query?.useremail){
+                query = { useremail: req.query.useremail }
+            }
+            console.log(query)
+            const result =await assinmentsColection.find(query).toArray()
             res.send(result)
         })
 
@@ -52,6 +59,19 @@ async function run() {
             const query =req.body
             const resuilt =await courseCollection.insertOne(query) 
             res.send(resuilt)
+        })
+
+        app.patch('/fromassinmetns/:id',async(req,res)=>{
+            const id = req.params.id
+            const filter = { _id: new ObjectId(id) }
+            const pending = req.body
+            const updatePanding ={
+                $set:{
+                    ...pending
+                }
+            } 
+            const result =await assinmentsColection.updateOne(filter,updatePanding)
+            res.send(result)
         })
 
         app.patch('/create/:id',async(req,res)=>{
