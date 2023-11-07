@@ -134,10 +134,23 @@ async function run() {
         })
 
         app.delete('/fromassinmetns/:id',async(req,res)=>{
+ 
             const id =req.params.id;
-            const findId ={_id : new ObjectId(id)}
-            const result =await assinmentsColection.deleteOne(findId)
-            res.send(result)
+            const findId = { _id: new ObjectId(id) }
+            const findone =await assinmentsColection.findOne(findId)
+            const body =req.body
+            const findemail =findone.useremail;
+            console.log(findone)
+            const useremail =body?.email
+            if(findemail === useremail){
+                const result = await assinmentsColection.deleteOne(findId)
+                res.send(result)
+            
+            }
+            else{
+                res.send({message : "You cannot deleted this"})
+            }    
+         
         })
 
 
