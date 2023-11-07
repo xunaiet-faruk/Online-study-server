@@ -1,17 +1,18 @@
 const express = require('express');
 const app =express()
+const jwt = require('jsonwebtoken');
 require('dotenv').config()
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const port =process.env.PORT || 5000;
 const cors = require('cors');
-
+const cookiParser = require('cookie-parser');
 app.use(cors({
-    origin: ['http://localhost:5173'],
+    origin: ['http://localhost:5174'],
     credentials:true
 }))
 
 app.use(express.json())
-
+app.use(cookiParser())
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.ot66xwb.mongodb.net/?retryWrites=true&w=majority`;
 
@@ -24,7 +25,21 @@ const client = new MongoClient(uri, {
     }
 });
 
-
+ const verifytoken =(req,res,next) =>{
+    const token =req?.cookies?.token;
+    console.log('hellow token',token);
+    if(!token){
+        return res.status(401).send({message : 'unauthorized aceess'})
+    }
+     jwt.verify(token, process.env.ACCESS_TOKEN,(err,decoded)=>{
+        if(err){
+            return res.status(401).send({ message: 'unauthosrized acses'})
+        }
+        req.user=decoded
+        next();
+     })
+ 
+ }
 
 async function run() {
     try {
@@ -43,9 +58,34 @@ async function run() {
 
         })
 
-        app.get('/fromassinmetns',async(req,res)=>{
-          
-            console.log(req.query?.useremail)
+        app.post('/jwt',async(req,res)=>{
+            
+            const user =req.body;
+            console.log("user token here",user)
+            const token = jwt.sign(user, process.env.ACCESS_TOKEN, {expiresIn : '24h'})
+            res.cookie('token',token,{
+                httpOnly:true,
+                secure:true,
+                sameSite:'none'
+            })
+            .send({success : true})
+
+        })
+
+        app.post('/logout',async(req,res)=>{
+            const user =req.body;
+            console.log("logout here token",user);
+            res.clearCookie('token',{maxAge:0}).send({success : true})
+        })
+
+        app.get('/fromassinmetns/:id',async(req,res)=>{
+            const id =req.params.id
+            const query ={_id : new ObjectId(id)}
+            const result =await assinmentsColection.findOne(query)
+            res.send(result)
+        })
+
+        app.get('/fromassinmetns',verifytoken,async(req,res)=>{
             let query ={};
             if (req.query?.useremail){
                 query = { useremail: req.query.useremail }
@@ -121,7 +161,6 @@ async function run() {
             const skip =pagenumber * perpage
             const result =await courseCollection.find().skip(skip).limit(perpage).toArray()
             const postCount =await courseCollection.countDocuments()
-            console.log(postCount)
             res.send({result,postCount})
             
         })
