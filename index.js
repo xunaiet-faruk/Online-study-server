@@ -85,7 +85,10 @@ async function run() {
             res.send(result)
         })
 
-        app.get('/fromassinmetns',verifytoken,async(req,res)=>{      
+        app.get('/fromassinmetns',verifytoken,async(req,res)=>{  
+            // if(req.user?.email !== req.query?.email){
+            //     return res.status(403).send({message : 'forbidden access'})
+            // }
             let query ={};
             if (req.query?.useremail){
                 query = { useremail: req.query.useremail }
