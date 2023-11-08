@@ -85,7 +85,7 @@ async function run() {
             res.send(result)
         })
 
-        app.get('/fromassinmetns',verifytoken,async(req,res)=>{
+        app.get('/fromassinmetns',verifytoken,async(req,res)=>{      
             let query ={};
             if (req.query?.useremail){
                 query = { useremail: req.query.useremail }
@@ -97,6 +97,7 @@ async function run() {
 
         app.post('/create',async(req,res)=>{
             const query =req.body
+            console.log(query);
             const resuilt =await courseCollection.insertOne(query) 
             res.send(resuilt)
         })
@@ -119,14 +120,7 @@ async function run() {
             const filter ={_id : new ObjectId(id)}
             const assinments =req.body
             const Updateassinments ={
-                $set :{
-                    title:assinments.title,
-                     marks:assinments.marks,
-                     image:assinments.image,
-                     datepiker:assinments.datepiker,
-                     difficult:assinments.difficult,
-                     description:assinments.description
-                }
+                $set: assinments
             }
 
             const resuilt =await courseCollection.updateOne(filter,Updateassinments)
@@ -175,20 +169,34 @@ async function run() {
         app.delete('/fromassinmetns/:id',async(req,res)=>{
  
             const id =req.params.id;
+            const queryEmail = req.query?.email ;
+            const productEmal = req.query?.productEmail;
             const findId = { _id: new ObjectId(id) }
-            const findone =await assinmentsColection.findOne(findId)
-            const body =req.body
-            const findemail =findone.useremail;
-            console.log(findone)
-            const useremail =body?.email
-            if(findemail === useremail){
-                const result = await assinmentsColection.deleteOne(findId)
+
+            console.log(queryEmail, productEmal);
+          
+
+
+            if (queryEmail == productEmal){
+                const result = await courseCollection.deleteOne(findId)
                 res.send(result)
-            
             }
-            else{
-                res.send({message : "You cannot deleted this"})
-            }    
+
+
+
+            // const findone = await courseCollection.findOne(findId)
+            // const body =req.body
+          
+            // console.log(findone)
+            // const useremail =body?.email
+            // if(findemail === useremail){
+            //     const result = await courseCollection.deleteOne(findId)
+            //     res.send(result)
+            
+            // }
+            // else{
+            //     res.send({message : "You cannot deleted this"})
+            // }    
          
         })
 
